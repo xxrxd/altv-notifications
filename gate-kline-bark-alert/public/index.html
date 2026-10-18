@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Gate K线 · Bark 告警</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,700;1,9..40,500&family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+  <main class="wrap">
+    <header class="hero">
+      <p class="brand">Gate Kline Alert</p>
+      <h1>15 分钟收盘实体监测</h1>
+      <p class="sub">最新已收盘 K 线实体（不含影线）≥ 阈值时，通过 Bark 强提醒到 iPhone。</p>
+      <div class="status" id="status">加载中…</div>
+    </header>
+
+    <form id="form" class="panel" autocomplete="off">
+      <section>
+        <h2>总开关</h2>
+        <label class="row switch">
+          <span>启用监测</span>
+          <input type="checkbox" id="enabled" />
+        </label>
+      </section>
+
+      <section>
+        <h2>合约</h2>
+        <p class="hint">可多选；默认 ETH_USDT。也可在下方输入框手动添加。</p>
+        <div id="contractList" class="chips"></div>
+        <div class="row">
+          <input id="contractCustom" type="text" placeholder="手动添加，如 BTC_USDT" />
+          <button type="button" id="addContract" class="ghost">添加</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>阈值与周期</h2>
+        <label class="field">
+          <span>实体高度阈值（点 / USDT）</span>
+          <input id="threshold" type="number" min="0.1" step="0.1" />
+        </label>
+        <label class="field">
+          <span>K 线周期</span>
+          <select id="interval">
+            <option value="15m">15m</option>
+            <option value="5m">5m</option>
+            <option value="30m">30m</option>
+            <option value="1h">1h</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>轮询间隔（毫秒）</span>
+          <input id="pollMs" type="number" min="5000" step="1000" />
+        </label>
+      </section>
+
+      <section>
+        <h2>时间段（时区）</h2>
+        <label class="field">
+          <span>时区</span>
+          <input id="timezone" type="text" />
+        </label>
+        <div id="windows"></div>
+        <button type="button" id="addWindow" class="ghost">加一段时间</button>
+      </section>
+
+      <section>
+        <h2>Bark 推送</h2>
+        <label class="field">
+          <span>Bark Key</span>
+          <input id="barkKey" type="text" placeholder="App 里复制的设备 Key" />
+        </label>
+        <label class="field">
+          <span>服务器</span>
+          <input id="barkServer" type="text" />
+        </label>
+        <label class="field">
+          <span>铃声</span>
+          <select id="barkSound"></select>
+        </label>
+        <label class="field">
+          <span>音量（critical 0–10）</span>
+          <input id="barkVolume" type="range" min="0" max="10" />
+          <output id="barkVolumeOut">10</output>
+        </label>
+        <label class="field">
+          <span>级别</span>
+          <select id="barkLevel">
+            <option value="critical">critical（最高，需系统允许）</option>
+            <option value="timeSensitive">timeSensitive</option>
+            <option value="active">active</option>
+          </select>
+        </label>
+        <label class="row switch">
+          <span>来电式持续响铃（call）</span>
+          <input type="checkbox" id="barkCall" />
+        </label>
+        <p class="hint">在 Bark App 中打开通知权限；critical / call 需按 App 说明开启。熄屏后由苹果推送送达，不依赖本页保持打开。</p>
+      </section>
+
+      <div class="actions">
+        <button type="submit" class="primary">保存设置</button>
+        <button type="button" id="testBark" class="ghost">测试 Bark</button>
+        <button type="button" id="checkNow" class="ghost">立即检测一次</button>
+      </div>
+      <p class="msg" id="msg" hidden></p>
+    </form>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

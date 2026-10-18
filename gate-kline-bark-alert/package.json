@@ -1,0 +1,17 @@
+{
+  "name": "gate-kline-bark-alert",
+  "version": "1.0.0",
+  "description": "Gate 合约 15 分钟 K 线实体监测 + Bark 强提醒",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test:gate": "node src/gate.js",
+    "test:bark": "node src/bark.js --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
