@@ -80,9 +80,12 @@ function fillForm(payload) {
   $("timezone").value = config.timezone;
   $("barkKey").value = config.bark?.key || "";
   $("barkServer").value = config.bark?.server || "https://api.day.app";
+  $("barkCustomSound").value = config.bark?.customSound || "";
   $("barkVolume").value = config.bark?.volume ?? 10;
   $("barkVolumeOut").textContent = String($("barkVolume").value);
   $("barkLevel").value = config.bark?.level || "critical";
+  $("barkGroup").value = config.bark?.group || "gate-kline";
+  $("barkTtl").value = config.bark?.ttl ?? 600;
   $("barkCall").checked = Boolean(config.bark?.call);
 
   const soundSel = $("barkSound");
@@ -120,9 +123,13 @@ function collectConfig() {
       key: $("barkKey").value.trim(),
       server: $("barkServer").value.trim(),
       sound: $("barkSound").value,
+      customSound: $("barkCustomSound").value.trim(),
       volume: Number($("barkVolume").value),
       level: $("barkLevel").value,
+      group: $("barkGroup").value.trim() || "gate-kline",
+      ttl: Number($("barkTtl").value) || 600,
       call: $("barkCall").checked,
+      method: "GET",
     },
   };
 }

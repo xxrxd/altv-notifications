@@ -32,9 +32,26 @@ npm start
 | 合约 | 多选，如 ETH_USDT、BTC_USDT |
 | 阈值 | 实体高度，默认 10（USDT 报价点） |
 | 时间段 | 按时区（默认 Asia/Shanghai），可跨午夜 |
-| 铃声 / 音量 | Bark `sound` + `volume`（0–10） |
-| call | 来电式持续响铃 |
+| 铃声 / 音量 | Bark `sound` + `volume`（0–10，仅 critical 生效） |
+| 自定义铃声 | Bark App 导入的 `.caf` 名称（可接近电话铃声） |
+| call | `call=1` 循环响铃约 30 秒 |
+| group / ttl | 与官方一致，如 `group=gate-kline&ttl=600` |
 | level | 建议 `critical` 或 `timeSensitive` |
+
+### 想用 iPhone 电话铃声？
+
+Bark **不能直接**调用系统来电铃声。可行做法：
+
+1. 把喜欢的来电铃声做成 **≤30 秒的 `.caf`**
+2. 打开 Bark → 铃声设置 → 导入
+3. 在本页「自定义铃声名」填导入后的名字
+4. 打开 `call=1` + `level=critical` + 音量 10，接近「强提醒来电」体验
+
+推送 URL 形态（与官方一致）：
+
+```text
+GET https://api.day.app/{key}/{title}/{body}?group=gate-kline&ttl=600&sound=...&call=1&level=critical&volume=10
+```
 
 ## 部署（需 24 小时在线）
 

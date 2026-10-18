@@ -1,16 +1,31 @@
 import { pathToFileURL } from "node:url";
 
 /**
+ * 按 Bark 官方参数推送：https://bark.day.app/#/params
+ *
+ * 推荐 GET：
+ *   https://api.day.app/{key}/{title}/{body}?group=...&ttl=600&sound=...&call=1&level=critical&volume=10
+ *
+ * 也支持 JSON POST（同名参数）。
+ *
+ * 关于「电话铃声」：
+ * Bark 不能直接读系统来电铃声，但可在 App 里导入自定义 .caf（≤30s），
+ * 然后把 sound 填成导入后的铃声名。把 iPhone 铃声转成 .caf 导入即可尽量接近来电声。
+ *
  * @param {{
  *   key: string,
  *   server?: string,
  *   title: string,
  *   body: string,
+ *   subtitle?: string,
  *   sound?: string,
  *   volume?: number,
  *   call?: boolean,
  *   level?: string,
  *   group?: string,
+ *   ttl?: number,
+ *   isArchive?: string | number,
+ *   method?: "GET" | "POST",
  * }} opts
  */
 export async function sendBark(opts) {
@@ -18,35 +33,46 @@ export async function sendBark(opts) {
   if (!key) throw new Error("未配置 Bark Key");
 
   const server = (opts.server || "https://api.day.app").replace(/\/$/, "");
-  let pushUrl;
+  const method = opts.method || "GET";
 
-  if (/^https?:\/\//i.test(key)) {
-    // 用户填了完整推送 URL 前缀
-    pushUrl = key.replace(/\/$/, "");
-  } else {
-    pushUrl = `${server}/${key}`;
-  }
-
-  const payload = {
-    title: opts.title,
-    body: opts.body,
-    sound: opts.sound || "alarm",
-    level: opts.level || "critical",
-    volume: opts.volume ?? 10,
+  /** @type {Record<string, string>} */
+  const query = {
     group: opts.group || "gate-kline",
-    isArchive: "1",
   };
 
-  if (opts.call) {
-    payload.call = "1";
-  }
+  if (opts.subtitle) query.subtitle = opts.subtitle;
+  if (opts.sound) query.sound = opts.sound;
+  if (opts.level) query.level = opts.level;
+  if (opts.volume != null && opts.volume !== "") query.volume = String(opts.volume);
+  if (opts.call) query.call = "1";
+  if (opts.ttl != null) query.ttl = String(opts.ttl);
+  if (opts.isArchive != null) query.isArchive = String(opts.isArchive);
 
-  // 优先 JSON POST（支持 call / volume / level）
-  const res = await fetch(pushUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify(payload),
-  });
+  let res;
+  if (method === "POST") {
+    const pushUrl = /^https?:\/\//i.test(key)
+      ? key.replace(/\/$/, "")
+      : `${server}/${key}`;
+    res = await fetch(pushUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        title: opts.title,
+        body: opts.body,
+        ...query,
+      }),
+    });
+  } else {
+    // GET：/key/title/body?params — 与用户示例一致
+    const base = /^https?:\/\//i.test(key)
+      ? key.replace(/\/$/, "")
+      : `${server}/${encodeURIComponent(key)}`;
+    const title = encodeURIComponent(opts.title);
+    const body = encodeURIComponent(opts.body);
+    const qs = new URLSearchParams(query).toString();
+    const url = `${base}/${title}/${body}?${qs}`;
+    res = await fetch(url, { method: "GET" });
+  }
 
   const text = await res.text();
   let json = null;
@@ -64,15 +90,16 @@ export async function sendBark(opts) {
 }
 
 /**
- * 常用铃声列表（Bark）
+ * Bark 内置铃声（也可在 UI 里填「自行导入的 .caf 名称」）
+ * 接近来电提示的可试：multiwayinvitation / alarm / horn
  */
 export const BARK_SOUNDS = [
   "alarm",
+  "multiwayinvitation",
   "bell",
   "horn",
   "electronic",
   "glass",
-  "multiwayinvitation",
   "paymentsuccess",
   "shake",
   "suspense",
@@ -80,6 +107,23 @@ export const BARK_SOUNDS = [
   "update",
   "minuet",
   "fanfare",
+  "bloom",
+  "calypso",
+  "chime",
+  "choo",
+  "descent",
+  "gotosleep",
+  "healthnotification",
+  "ladder",
+  "mailsent",
+  "newmail",
+  "newsflash",
+  "noir",
+  "sherwoodforest",
+  "spell",
+  "tiptoes",
+  "typewriters",
+  "birdsong",
 ];
 
 const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
@@ -93,11 +137,14 @@ if (isDirectRun && process.argv.includes("--test")) {
   const result = await sendBark({
     key,
     title: "Gate K线告警测试",
-    body: "这是一条 Bark 测试推送（call=1）",
-    sound: "alarm",
+    body: "GET 推送测试：critical + call=1，持续响铃约 30 秒",
+    sound: process.env.BARK_SOUND || "multiwayinvitation",
     volume: 10,
     call: true,
     level: "critical",
+    group: "gate-kline",
+    ttl: 600,
+    method: "GET",
   });
   console.log(result);
 }

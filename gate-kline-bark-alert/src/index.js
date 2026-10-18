@@ -54,15 +54,23 @@ const server = http.createServer(async (req, res) => {
       const config = store.getConfig();
       const body = await readJson(req).catch(() => ({}));
       const bark = { ...config.bark, ...(body.bark || {}) };
+      const sound =
+        (bark.customSound && String(bark.customSound).trim()) ||
+        bark.sound ||
+        "multiwayinvitation";
       const result = await sendBark({
         key: bark.key || config.bark.key,
         server: bark.server || config.bark.server,
         title: "Gate K线告警 · 测试",
-        body: "这是一条测试推送。若设置了 call，应持续响铃。",
-        sound: bark.sound,
+        body: "GET 测试推送。call=1 约响 30 秒；critical 需在 Bark 开「重要警告」。",
+        subtitle: "test",
+        sound,
         volume: bark.volume,
         call: bark.call !== undefined ? Boolean(bark.call) : Boolean(config.bark.call),
         level: bark.level || config.bark.level,
+        group: bark.group || config.bark.group || "gate-kline",
+        ttl: bark.ttl ?? config.bark.ttl ?? 600,
+        method: (bark.method || config.bark.method) === "POST" ? "POST" : "GET",
       });
       return json(res, 200, { ok: true, result });
     }

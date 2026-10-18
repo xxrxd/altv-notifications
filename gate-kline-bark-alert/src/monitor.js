@@ -101,16 +101,24 @@ async function checkContract(contract, config, store, log) {
 
   log(`[alert] ${alertKey} body=${candle.body.toFixed(2)}`);
 
+  const sound =
+    (config.bark.customSound && String(config.bark.customSound).trim()) ||
+    config.bark.sound ||
+    "multiwayinvitation";
+
   await sendBark({
     key: config.bark.key,
     server: config.bark.server,
     title,
     body,
-    sound: config.bark.sound,
+    subtitle: `${contract} · 实体 ${candle.body.toFixed(2)}`,
+    sound,
     volume: config.bark.volume,
     call: Boolean(config.bark.call),
     level: config.bark.level,
-    group: "gate-kline",
+    group: config.bark.group || "gate-kline",
+    ttl: config.bark.ttl ?? 600,
+    method: config.bark.method === "POST" ? "POST" : "GET",
   });
 
   await store.markAlerted(alertKey);

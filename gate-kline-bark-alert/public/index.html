@@ -80,8 +80,12 @@
           <input id="barkServer" type="text" />
         </label>
         <label class="field">
-          <span>铃声</span>
+          <span>内置铃声</span>
           <select id="barkSound"></select>
+        </label>
+        <label class="field">
+          <span>自定义铃声名（优先，导入的电话铃声 .caf）</span>
+          <input id="barkCustomSound" type="text" placeholder="例如：Opening 或你在 Bark 里起的名字" />
         </label>
         <label class="field">
           <span>音量（critical 0–10）</span>
@@ -96,11 +100,22 @@
             <option value="active">active</option>
           </select>
         </label>
+        <label class="field">
+          <span>分组 group</span>
+          <input id="barkGroup" type="text" placeholder="gate-kline" />
+        </label>
+        <label class="field">
+          <span>ttl（秒，历史保留）</span>
+          <input id="barkTtl" type="number" min="0" step="60" />
+        </label>
         <label class="row switch">
-          <span>来电式持续响铃（call）</span>
+          <span>来电式持续响铃（call=1，约 30 秒）</span>
           <input type="checkbox" id="barkCall" />
         </label>
-        <p class="hint">在 Bark App 中打开通知权限；critical / call 需按 App 说明开启。熄屏后由苹果推送送达，不依赖本页保持打开。</p>
+        <p class="hint">
+          Bark <strong>不能直接</strong>用系统电话铃声。做法：把 iPhone 来电铃声转成 ≤30 秒的 <code>.caf</code>，在 Bark → 铃声设置里导入，再把上面「自定义铃声名」填成导入后的名字。
+          同时打开通知权限与「重要警告」。推送格式对齐官方：<code>/key/title/body?group=&amp;ttl=</code>。
+        </p>
       </section>
 
       <div class="actions">

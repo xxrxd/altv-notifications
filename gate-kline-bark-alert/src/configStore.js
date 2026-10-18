@@ -17,14 +17,25 @@ const DEFAULT_CONFIG = {
     key: "",
     /** 服务器地址，默认官方 */
     server: "https://api.day.app",
-    /** 铃声：alarm / bell / birdsong / bloom / calypso / chime / choo / descent / electronic / fanfare / glass / gotosleep / healthnotification / horn / ladder / mailsent / minuet / multiwayinvitation / newmail / newsflash / noir / paymentsuccess / shake / sherwoodforest / silence / spell / suspense / telegraph / tiptoes / typewriters / update */
-    sound: "alarm",
+    /**
+     * 铃声名：内置如 multiwayinvitation / alarm，或 Bark App 里导入的 .caf 自定义名。
+     * 无法直接使用系统「电话」铃声；把来电铃声转成 .caf 导入后填名称即可。
+     */
+    sound: "multiwayinvitation",
+    /** 自定义铃声名（优先于 sound 下拉），用于导入的电话铃声 .caf */
+    customSound: "",
     /** critical 级别音量 0-10；配合 call 更接近来电 */
     volume: 10,
-    /** Bark 持续响铃（类似来电），需要较新 Bark App */
+    /** call=1 循环响铃约 30 秒 */
     call: true,
     /** active | timeSensitive | critical | passive */
     level: "critical",
+    /** 分组，同 group 可在通知中心归组 */
+    group: "gate-kline",
+    /** 历史记录保留秒数，对应官方 ttl */
+    ttl: 600,
+    /** GET 与官方示例一致；也可 POST */
+    method: "GET",
     titlePrefix: "Gate K线告警",
   },
   /** 轮询间隔毫秒 */
