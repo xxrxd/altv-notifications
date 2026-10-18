@@ -25,13 +25,26 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
 
     if (req.method === "GET" && url.pathname === "/api/health") {
-      return json(res, 200, { ok: true, now: Date.now() });
+      return json(res, 200, { ok: true, now: Date.now(), status: monitor.getStatus() });
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/status") {
+      return json(res, 200, {
+        status: monitor.getStatus(),
+        state: publicState(store.getState()),
+      });
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/probe-routes") {
+      const routes = await monitor.refreshRoutes();
+      return json(res, 200, { ok: true, routes, status: monitor.getStatus() });
     }
 
     if (req.method === "GET" && url.pathname === "/api/config") {
       return json(res, 200, {
         config: store.getConfig(),
         state: publicState(store.getState()),
+        status: monitor.getStatus(),
         sounds: BARK_SOUNDS,
         defaults: store.defaults,
       });
@@ -46,7 +59,8 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && url.pathname === "/api/contracts") {
       const settle = url.searchParams.get("settle") || store.getConfig().settle || "usdt";
-      const contracts = await listUsdtContracts(settle);
+      const base = monitor.getStatus().bestRestUrl || undefined;
+      const contracts = await listUsdtContracts(settle, base);
       return json(res, 200, { contracts });
     }
 
@@ -77,10 +91,13 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "POST" && url.pathname === "/api/check-now") {
       await monitor.tick();
-      return json(res, 200, { ok: true, state: publicState(store.getState()) });
+      return json(res, 200, {
+        ok: true,
+        state: publicState(store.getState()),
+        status: monitor.getStatus(),
+      });
     }
 
-    // static
     if (req.method === "GET") {
       const filePath = await resolvePublic(publicDir, url.pathname);
       if (filePath) {
@@ -99,7 +116,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(port, () => {
+server.listen(port, "127.0.0.1", () => {
   console.log(`[server] http://127.0.0.1:${port}`);
   console.log(`[server] dataDir=${dataDir}`);
 });

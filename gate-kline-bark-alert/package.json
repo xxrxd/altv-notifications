@@ -9,7 +9,9 @@
     "dev": "node --watch src/index.js",
     "test": "node src/selftest.js",
     "test:gate": "node src/gate.js",
-    "test:bark": "node src/bark.js --test"
+    "test:bark": "node src/bark.js --test",
+    "install:mac": "bash scripts/install-macos.sh",
+    "uninstall:mac": "bash scripts/uninstall-macos.sh"
   },
   "engines": {
     "node": ">=18"

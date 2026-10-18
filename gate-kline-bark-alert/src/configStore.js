@@ -38,8 +38,12 @@ const DEFAULT_CONFIG = {
     method: "GET",
     titlePrefix: "Gate K线告警",
   },
-  /** 轮询间隔毫秒 */
-  pollMs: 15000,
+  /** REST 兜底轮询间隔毫秒（WS 正常时主要在收盘窗口补检） */
+  pollMs: 10000,
+  /** 同 pollMs，显式 REST 间隔 */
+  restPollMs: 10000,
+  /** 线路延迟重测间隔毫秒 */
+  routeProbeMs: 60000,
 };
 
 /**

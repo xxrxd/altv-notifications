@@ -17,6 +17,7 @@
       <h1>15 分钟收盘实体监测</h1>
       <p class="sub">最新已收盘 K 线实体（不含影线）≥ 阈值时，通过 Bark 强提醒到 iPhone。</p>
       <div class="status" id="status">加载中…</div>
+      <div class="status-card" id="liveStatus">线路探测中…</div>
     </header>
 
     <form id="form" class="panel" autocomplete="off">
@@ -122,6 +123,7 @@
         <button type="submit" class="primary">保存设置</button>
         <button type="button" id="testBark" class="ghost">测试 Bark</button>
         <button type="button" id="checkNow" class="ghost">立即检测一次</button>
+        <button type="button" id="probeRoutes" class="ghost">重测线路延迟</button>
       </div>
       <p class="msg" id="msg" hidden></p>
     </form>

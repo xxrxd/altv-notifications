@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.xxrxd.gate-kline-bark-alert</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__ROOT__/src/index.js</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__ROOT__</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PORT</key>
+    <string>3780</string>
+    <key>DATA_DIR</key>
+    <string>__ROOT__/data</string>
+    <key>PATH</key>
+    <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+  </dict>
+
+  <!-- 登录即启动 -->
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- 崩溃/退出后自动拉起 -->
+  <key>KeepAlive</key>
+  <true/>
+
+  <!-- 进程退出码非 0 也重启 -->
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/gate-kline-bark-alert/stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/gate-kline-bark-alert/stderr.log</string>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>

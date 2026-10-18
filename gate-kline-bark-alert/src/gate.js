@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-const GATE_HOST = "https://api.gateio.ws/api/v4";
+const DEFAULT_REST = "https://api.gateio.ws/api/v4";
 
 /** @type {Record<string, number>} */
 const INTERVAL_SECONDS = {
@@ -16,13 +16,14 @@ const INTERVAL_SECONDS = {
 };
 
 /**
- * @param {{ settle?: string, contract: string, interval?: string, limit?: number }} opts
+ * @param {{ settle?: string, contract: string, interval?: string, limit?: number, baseUrl?: string }} opts
  */
 export async function fetchCandlesticks(opts) {
   const settle = opts.settle || "usdt";
   const interval = opts.interval || "15m";
   const limit = opts.limit ?? 5;
-  const url = new URL(`${GATE_HOST}/futures/${settle}/candlesticks`);
+  const base = (opts.baseUrl || DEFAULT_REST).replace(/\/$/, "");
+  const url = new URL(`${base}/futures/${settle}/candlesticks`);
   url.searchParams.set("contract", opts.contract);
   url.searchParams.set("interval", interval);
   url.searchParams.set("limit", String(limit));
@@ -61,7 +62,7 @@ function normalizeCandle(row) {
 }
 
 /**
- * 取最近一根已收盘 K 线（不含影线的实体高度已在 body）
+ * 取最近一根已收盘 K 线
  * @param {Awaited<ReturnType<typeof fetchCandlesticks>>} candles
  * @param {string} interval
  * @param {number} [nowSec]
@@ -79,9 +80,11 @@ export function getLatestClosedCandle(candles, interval, nowSec = Math.floor(Dat
 
 /**
  * @param {string} [settle]
+ * @param {string} [baseUrl]
  */
-export async function listUsdtContracts(settle = "usdt") {
-  const url = `${GATE_HOST}/futures/${settle}/contracts`;
+export async function listUsdtContracts(settle = "usdt", baseUrl = DEFAULT_REST) {
+  const base = baseUrl.replace(/\/$/, "");
+  const url = `${base}/futures/${settle}/contracts`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`Gate contracts ${res.status}`);
   /** @type {Array<{ name: string }>} */
@@ -89,9 +92,8 @@ export async function listUsdtContracts(settle = "usdt") {
   return rows.map((r) => r.name).sort();
 }
 
-export { INTERVAL_SECONDS };
+export { INTERVAL_SECONDS, DEFAULT_REST };
 
-// CLI smoke test: node src/gate.js
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const candles = await fetchCandlesticks({ contract: "ETH_USDT", interval: "15m", limit: 5 });
   const latest = getLatestClosedCandle(candles, "15m");

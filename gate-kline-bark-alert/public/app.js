@@ -108,6 +108,37 @@ function fillForm(payload) {
     : "尚未检测";
   const err = state.lastError ? ` · 错误: ${state.lastError}` : "";
   $("status").textContent = `最近检测: ${last} · 已记录告警 ${state.alertedCount}${err}`;
+  renderLiveStatus(payload.status);
+}
+
+function renderLiveStatus(status) {
+  const el = $("liveStatus");
+  if (!status) {
+    el.textContent = "暂无线路状态";
+    return;
+  }
+  const ws = status.ws
+    ? `${status.ws.url} · ${status.ws.latencyMs ?? "-"}ms`
+    : "不可用 → REST 兜底";
+  const rest = status.rest
+    ? `${status.rest.url} · ${status.rest.latencyMs ?? "-"}ms`
+    : "不可用";
+  const conn = status.wsConnected ? "已连接" : "未连接/重连中";
+  const candle = status.lastCandle
+    ? `${status.lastCandle.contract} body=${Number(status.lastCandle.body).toFixed(2)} closed=${status.lastCandle.closed} via ${status.lastCandle.source}`
+    : "等待行情";
+  const routes = (status.routes || [])
+    .map((r) => `  ${r.ok ? "✓" : "✗"} ${r.label}: ${r.ok ? r.latencyMs + "ms" : r.error || "fail"}`)
+    .join("\n");
+  el.innerHTML = [
+    `<strong>模式</strong> ${status.feed || "-"} · WS ${conn}`,
+    `<strong>最快 WS</strong> ${ws}`,
+    `<strong>最快 REST</strong> ${rest}`,
+    `<strong>最新 K</strong> ${candle}`,
+    routes ? `<strong>线路</strong>\n${routes}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function collectConfig() {
@@ -201,6 +232,31 @@ async function boot() {
       showMsg(err.message || String(err), true);
     }
   });
+
+  $("probeRoutes").addEventListener("click", async () => {
+    try {
+      const r = await api("/api/probe-routes", { method: "POST", body: "{}" });
+      renderLiveStatus(r.status);
+      showMsg("线路延迟已重测");
+    } catch (err) {
+      showMsg(err.message || String(err), true);
+    }
+  });
+
+  setInterval(() => {
+    api("/api/status")
+      .then((r) => {
+        renderLiveStatus(r.status);
+        const st = r.state;
+        if (!st) return;
+        const last = st.lastCheckAt
+          ? new Date(st.lastCheckAt).toLocaleString("zh-CN")
+          : "尚未检测";
+        const err = st.lastError ? ` · 错误: ${st.lastError}` : "";
+        $("status").textContent = `最近检测: ${last} · 已记录告警 ${st.alertedCount}${err}`;
+      })
+      .catch(() => {});
+  }, 5000);
 }
 
 boot().catch((err) => {
